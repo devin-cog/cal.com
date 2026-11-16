@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import * as React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { UseFormReturn } from "react-hook-form";
@@ -54,6 +54,42 @@ describe("FormBuilderField", () => {
       identifier: "textInput1",
       value: "test",
       formMethods,
+    });
+  });
+
+  describe.each([
+    { type: "email" as const, value: "john@example.com" },
+    { type: "address" as const, value: "221B Baker Street" },
+  ])("$type field", ({ type, value }) => {
+    it("does not leak setValue to the DOM input and still updates the form value", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const { formMethods } = renderComponent({
+        props: {
+          field: { name: `${type}Field`, type, label: `${type} label` },
+          readOnly: false,
+          className: "",
+        },
+        formDefaultValues: {},
+      });
+
+      const input = await waitFor(() => {
+        const el = document.querySelector<HTMLInputElement>(`input[name="${type}Field"]`);
+        expect(el).not.toBeNull();
+        return el as HTMLInputElement;
+      });
+      // React warns about an unknown prop only once per process, so also inspect the props React applied to the node.
+      const reactPropsKey = Object.keys(input).find((key) => key.startsWith("__reactProps$"));
+      expect(reactPropsKey).toBeDefined();
+      expect(input[reactPropsKey as keyof HTMLInputElement]).not.toHaveProperty("setValue");
+      const setValueWarnings = consoleErrorSpy.mock.calls.filter((args) =>
+        args.some((arg) => typeof arg === "string" && arg.includes("setValue"))
+      );
+      consoleErrorSpy.mockRestore();
+      expect(setValueWarnings).toEqual([]);
+
+      fireEvent.change(input, { target: { value } });
+      expect(input.value).toEqual(value);
+      expect(formMethods.getValues(`responses.${type}Field`)).toEqual(value);
     });
   });
 });
