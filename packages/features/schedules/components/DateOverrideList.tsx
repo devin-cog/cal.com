@@ -142,7 +142,7 @@ const DateOverrideList = ({
                 data-testid="delete-button"
                 title={t("date_overrides_delete_on_date", {
                   date: isPlatform
-                    ? formatInTimeZone(new Date(item.ranges[0].start), "UTC", "h:mm a")
+                    ? formatInTimeZone(new Date(item.ranges[0].start), "UTC", "EEE MMM dd")
                     : new Intl.DateTimeFormat(i18n.language, {
                         weekday: "long",
                         month: "long",
