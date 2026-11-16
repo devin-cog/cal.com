@@ -9,6 +9,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { getPaymentAppData } from "@calcom/app-store/_utils/payments/getPaymentAppData";
 import useLockedFieldsManager from "@calcom/features/ee/managed-event-types/hooks/useLockedFieldsManager";
 import type { EventTypeSetupProps, FormValues } from "@calcom/features/eventtypes/lib/types";
+import { getDurationLabel } from "@calcom/features/eventtypes/lib/getDurationLabel";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { VerticalTabItemProps } from "@calcom/ui/components/navigation";
 
@@ -145,7 +146,6 @@ type getNavigationProps = {
 };
 
 function getNavigation({ length, multipleDuration, t, tabs, url, onClick, currentTab }: getNavigationProps) {
-  const duration = multipleDuration?.map((duration) => ` ${duration}`) || length;
   const tabsNavigation: VerticalTabItemProps[] = [];
   tabs.includes("setup") &&
     tabsNavigation.push({
@@ -154,7 +154,7 @@ function getNavigation({ length, multipleDuration, t, tabs, url, onClick, curren
       isActive: currentTab === "setup",
       href: `${url}?tabName=setup`,
       icon: "link",
-      info: `${duration} ${t("minute_timeUnit")}`, // TODO: Get this from props
+      info: getDurationLabel({ length, multipleDuration, t }),
       "data-testid": `basics`,
     });
   tabs.includes("limits") &&

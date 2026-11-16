@@ -15,6 +15,7 @@ import type {
   FormValues,
   EventTypeApps,
 } from "@calcom/features/eventtypes/lib/types";
+import { getDurationLabel } from "@calcom/features/eventtypes/lib/getDurationLabel";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { VerticalTabItemProps } from "@calcom/ui/components/navigation";
 
@@ -188,14 +189,12 @@ function getNavigation({
   enabledWorkflowsNumber,
   canReadWorkflows,
 }: getNavigationProps) {
-  const duration = multipleDuration?.map((duration) => ` ${duration}`) || length;
-
   const baseNavigation: VerticalTabItemProps[] = [
     {
       name: t("basics"),
       href: `/event-types/${id}?tabName=setup`,
       icon: "link",
-      info: `${duration} ${t("minute_timeUnit")}`, // TODO: Get this from props
+      info: getDurationLabel({ length, multipleDuration, t }),
       "data-testid": `basics`,
     },
     {
